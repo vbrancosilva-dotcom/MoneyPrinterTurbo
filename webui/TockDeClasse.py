@@ -36,6 +36,7 @@ st.markdown(
 
 st.title("⚽ Tock de Classe — Afiliado")
 st.caption("Roteiro, prompts de duas cenas e montagem vertical para TikTok Shop.")
+st.caption("O vídeo sai sem música para você adicionar um áudio autorizado dentro do TikTok.")
 
 with st.form("campaign_form"):
     left, right = st.columns(2)
@@ -144,8 +145,8 @@ if campaign:
                 voice_name="pt-BR-AntonioNeural-Male",
                 voice_rate=1.05,
                 voice_volume=1.0,
-                bgm_type="random",
-                bgm_volume=0.15,
+                bgm_type="",
+                bgm_volume=0.0,
                 subtitle_enabled=True,
                 subtitle_position="bottom",
                 font_size=70,
