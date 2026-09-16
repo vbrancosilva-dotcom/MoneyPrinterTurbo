@@ -62,7 +62,7 @@ tls_verify = true
 # Video Materials / 视频素材
 # -----------------------------------------------------------------------------
 
-# Available values: "pexels", "pixabay", "coverr", "wavespeed", "loomloom",
+# Available values: "pexels", "pixabay", "coverr", "wavespeed", "higgsfield", "loomloom",
 # "local".
 # "wavespeed" generates brand-new clips with WaveSpeed AI text-to-video models
 # instead of searching stock footage; generation is billed per request.
@@ -95,6 +95,17 @@ wavespeed_api_keys = []
 # chosen model supports a different range.
 # wavespeed_min_duration = 4
 # wavespeed_max_duration = 15
+
+# Higgsfield API credentials use the combined "key-id:key-secret" format.
+# Create credentials at https://console.higgsfield.ai and keep real values only
+# in config.toml (which is ignored by git).
+higgsfield_api_keys = []
+# higgsfield_text_to_video_model = "bytedance/seedance-2.0/text-to-video"
+# higgsfield_video_resolution = "720p"
+# higgsfield_min_duration = 4
+# higgsfield_max_duration = 15
+# higgsfield_request_timeout_seconds = 90
+# higgsfield_run_timeout_seconds = 900
 
 # Optional TwelveLabs integration for semantic material ranking and video QA.
 # Install the optional dependency with: uv sync --extra twelvelabs
