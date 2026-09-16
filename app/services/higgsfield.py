@@ -1,8 +1,8 @@
 """Higgsfield text-to-video material provider.
 
 The public ``higgsfield-ai/higgsfield`` repository is a GPU training
-orchestrator and is not the video-generation product.  This adapter uses the
-official Higgsfield API client so MoneyPrinterTurbo can keep its existing
+orchestrator and is not the video-generation product. This adapter uses the
+official Higgsfield generation API so MoneyPrinterTurbo can keep its existing
 script, voice, subtitle, and editing pipeline while Higgsfield creates the
 visual clips.
 """
