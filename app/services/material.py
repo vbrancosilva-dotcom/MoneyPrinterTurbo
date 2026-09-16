@@ -12,7 +12,7 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from app.config import config
 from app.models.schema import MaterialInfo, VideoAspect, VideoConcatMode
-from app.services import material_cache, task_artifacts
+from app.services import higgsfield, material_cache, task_artifacts
 from app.utils import utils
 
 # Thread-safe counter for API key rotation
@@ -1188,6 +1188,15 @@ def download_videos(
             max_clip_duration=max_clip_duration,
             material_directory=material_directory,
         )
+    if source == "higgsfield":
+        return _download_videos_higgsfield_on_demand(
+            task_id=task_id,
+            search_terms=search_terms,
+            video_aspect=video_aspect,
+            audio_duration=audio_duration,
+            max_clip_duration=max_clip_duration,
+            material_directory=material_directory,
+        )
 
     if match_script_order:
         return _download_videos_by_script_order(
@@ -1339,6 +1348,65 @@ def _download_videos_wavespeed_on_demand(
             )
             break
     logger.success(f"generated and downloaded {len(video_paths)} videos")
+    _persist_material_sources(task_id, material_sources)
+    return video_paths
+
+
+def _download_videos_higgsfield_on_demand(
+    *,
+    task_id: str,
+    search_terms: List[str],
+    video_aspect: VideoAspect,
+    audio_duration: float,
+    max_clip_duration: int,
+    material_directory: str,
+) -> List[str]:
+    """Generate only the Higgsfield clips needed to cover the voiceover."""
+
+    video_paths: List[str] = []
+    material_sources: list[dict[str, Any]] = []
+    total_duration = 0.0
+    for search_term in search_terms:
+        try:
+            video_items = higgsfield.generate_videos(
+                search_term=search_term,
+                minimum_duration=max_clip_duration,
+                video_aspect=video_aspect,
+            )
+        except higgsfield.HiggsfieldUnconfirmedTaskError as exc:
+            logger.error(
+                "stop submitting Higgsfield tasks because the last paid request "
+                f"is unconfirmed: request_id={exc.request_id or 'unknown'}, "
+                f"detail={exc}"
+            )
+            break
+
+        for item in video_items:
+            saved_video_path = _save_wavespeed_video_with_retry(
+                item.url, material_directory
+            )
+            if not saved_video_path:
+                continue
+            logger.info(f"video saved: {saved_video_path}")
+            video_paths.append(saved_video_path)
+            try:
+                material_sources.append(_material_source_record(item, saved_video_path))
+            except Exception as source_error:
+                logger.warning(
+                    "failed to prepare Higgsfield material source record: "
+                    f"error={type(source_error).__name__}, detail={source_error}"
+                )
+            total_duration += min(max_clip_duration, item.duration)
+            if total_duration >= audio_duration:
+                break
+        if total_duration >= audio_duration:
+            logger.info(
+                "Higgsfield material duration is sufficient; "
+                f"generated={total_duration:.1f}s, required={audio_duration:.1f}s"
+            )
+            break
+
+    logger.success(f"downloaded {len(video_paths)} Higgsfield videos")
     _persist_material_sources(task_id, material_sources)
     return video_paths
 
